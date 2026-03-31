@@ -39,8 +39,3 @@ A RESTful API built with Node.js, Express.js, and MySQL that allows users to add
 Import `School_Management_API.postman_collection.json` to test all endpoints.
 ```
 
-
-```
-git add .
-git commit -m "Update README"
-git push

@@ -1,0 +1,265 @@
+{
+  "info": {
+    "_postman_id": "school-management-api-collection",
+    "name": "School Management API",
+    "description": "Postman collection for School Management APIs. Includes Add School (POST) and List Schools (GET) endpoints with example requests and expected responses.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3000",
+      "type": "string",
+      "description": "Base URL of the API server. Change this to your deployed URL when testing in production."
+    }
+  ],
+  "item": [
+    {
+      "name": "Health Check",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/",
+          "host": ["{{base_url}}"],
+          "path": [""]
+        },
+        "description": "Check if the API server is running."
+      },
+      "response": [
+        {
+          "name": "API Running",
+          "originalRequest": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/" }
+          },
+          "status": "OK",
+          "code": 200,
+          "body": "{\n  \"success\": true,\n  \"message\": \"School Management API is running\",\n  \"version\": \"1.0.0\",\n  \"endpoints\": {\n    \"addSchool\": \"POST /addSchool\",\n    \"listSchools\": \"GET /listSchools?latitude={lat}&longitude={lon}\"\n  }\n}"
+        }
+      ]
+    },
+    {
+      "name": "Add School",
+      "item": [
+        {
+          "name": "Add School - Success",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Springfield Elementary School\",\n  \"address\": \"123 Main Street, Springfield, IL 62701\",\n  \"latitude\": 39.7817,\n  \"longitude\": -89.6501\n}",
+              "options": {
+                "raw": { "language": "json" }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/addSchool",
+              "host": ["{{base_url}}"],
+              "path": ["addSchool"]
+            },
+            "description": "Add a new school to the database. All fields are required."
+          },
+          "response": [
+            {
+              "name": "201 - School Added Successfully",
+              "status": "Created",
+              "code": 201,
+              "body": "{\n  \"success\": true,\n  \"message\": \"School added successfully\",\n  \"data\": {\n    \"id\": 1,\n    \"name\": \"Springfield Elementary School\",\n    \"address\": \"123 Main Street, Springfield, IL 62701\",\n    \"latitude\": 39.7817,\n    \"longitude\": -89.6501\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Add School - Missing Fields (Validation Error)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"\",\n  \"address\": \"123 Main Street\"\n}",
+              "options": {
+                "raw": { "language": "json" }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/addSchool",
+              "host": ["{{base_url}}"],
+              "path": ["addSchool"]
+            },
+            "description": "Test validation — missing latitude and longitude, empty name."
+          },
+          "response": [
+            {
+              "name": "400 - Validation Failed",
+              "status": "Bad Request",
+              "code": 400,
+              "body": "{\n  \"success\": false,\n  \"message\": \"Validation failed\",\n  \"errors\": [\n    { \"field\": \"name\", \"message\": \"School name is required\" },\n    { \"field\": \"latitude\", \"message\": \"Latitude is required\" },\n    { \"field\": \"longitude\", \"message\": \"Longitude is required\" }\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "Add School - Invalid Coordinates",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Test School\",\n  \"address\": \"456 Oak Avenue, Chicago, IL\",\n  \"latitude\": 200,\n  \"longitude\": -500\n}",
+              "options": {
+                "raw": { "language": "json" }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/addSchool",
+              "host": ["{{base_url}}"],
+              "path": ["addSchool"]
+            },
+            "description": "Test with out-of-range latitude/longitude values."
+          },
+          "response": [
+            {
+              "name": "400 - Invalid Coordinates",
+              "status": "Bad Request",
+              "code": 400,
+              "body": "{\n  \"success\": false,\n  \"message\": \"Validation failed\",\n  \"errors\": [\n    { \"field\": \"latitude\", \"message\": \"Latitude must be a valid number between -90 and 90\" },\n    { \"field\": \"longitude\", \"message\": \"Longitude must be a valid number between -180 and 180\" }\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "Add School - Duplicate Name",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Springfield Elementary School\",\n  \"address\": \"Different Address, IL\",\n  \"latitude\": 39.7817,\n  \"longitude\": -89.6501\n}",
+              "options": {
+                "raw": { "language": "json" }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/addSchool",
+              "host": ["{{base_url}}"],
+              "path": ["addSchool"]
+            },
+            "description": "Try to add a school that already exists (same name)."
+          },
+          "response": [
+            {
+              "name": "409 - Duplicate School",
+              "status": "Conflict",
+              "code": 409,
+              "body": "{\n  \"success\": false,\n  \"message\": \"A school with this name already exists\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "List Schools",
+      "item": [
+        {
+          "name": "List Schools - Sorted by Proximity",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/listSchools?latitude=28.6139&longitude=77.2090",
+              "host": ["{{base_url}}"],
+              "path": ["listSchools"],
+              "query": [
+                {
+                  "key": "latitude",
+                  "value": "28.6139",
+                  "description": "User's current latitude (New Delhi)"
+                },
+                {
+                  "key": "longitude",
+                  "value": "77.2090",
+                  "description": "User's current longitude (New Delhi)"
+                }
+              ]
+            },
+            "description": "Get all schools sorted by proximity to New Delhi coordinates (28.6139, 77.2090)."
+          },
+          "response": [
+            {
+              "name": "200 - Schools List (Sorted)",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"success\": true,\n  \"message\": \"Schools retrieved and sorted by proximity\",\n  \"user_location\": {\n    \"latitude\": 28.6139,\n    \"longitude\": 77.209\n  },\n  \"total\": 3,\n  \"data\": [\n    {\n      \"id\": 2,\n      \"name\": \"Kendriya Vidyalaya\",\n      \"address\": \"Andrews Ganj, New Delhi\",\n      \"latitude\": 28.5733,\n      \"longitude\": 77.2207,\n      \"distance_km\": 4.49\n    },\n    {\n      \"id\": 4,\n      \"name\": \"St. Columba School\",\n      \"address\": \"Ashok Place, New Delhi\",\n      \"latitude\": 28.6364,\n      \"longitude\": 77.2117,\n      \"distance_km\": 2.53\n    },\n    {\n      \"id\": 1,\n      \"name\": \"Delhi Public School\",\n      \"address\": \"Sector 45, Gurugram, Haryana\",\n      \"latitude\": 28.423,\n      \"longitude\": 77.0454,\n      \"distance_km\": 24.76\n    }\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "List Schools - Missing Parameters",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/listSchools",
+              "host": ["{{base_url}}"],
+              "path": ["listSchools"]
+            },
+            "description": "Test validation — no latitude or longitude provided."
+          },
+          "response": [
+            {
+              "name": "400 - Missing Query Params",
+              "status": "Bad Request",
+              "code": 400,
+              "body": "{\n  \"success\": false,\n  \"message\": \"Validation failed\",\n  \"errors\": [\n    { \"field\": \"latitude\", \"message\": \"Latitude query parameter is required\" },\n    { \"field\": \"longitude\", \"message\": \"Longitude query parameter is required\" }\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "List Schools - Different Location (Mumbai)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/listSchools?latitude=19.0760&longitude=72.8777",
+              "host": ["{{base_url}}"],
+              "path": ["listSchools"],
+              "query": [
+                {
+                  "key": "latitude",
+                  "value": "19.0760",
+                  "description": "User's current latitude (Mumbai)"
+                },
+                {
+                  "key": "longitude",
+                  "value": "72.8777",
+                  "description": "User's current longitude (Mumbai)"
+                }
+              ]
+            },
+            "description": "Get all schools sorted by proximity to Mumbai coordinates."
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}
